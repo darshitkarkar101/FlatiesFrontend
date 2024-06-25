@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import HouseLists from './HouseList';
+import UserProfile from './editProfile';
 import Explore from './Explore';
 import Notification from './NotificationScreen';
 import TabBar from '../components/TabBar';
 import LogOutScreen from './LogOutScreen'; // Correct import path
 import PostBar from '../components/PostBar'; // Correct import path
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Keyboard } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; // Import useNavigation hook
 
 const Tab = createBottomTabNavigator();
@@ -17,6 +18,21 @@ const TabNavDashboard = () => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation(); // Hook to access navigation object
   const [postBarVisible, setPostBarVisible] = useState(false); // State to control PostBar visibility
+  const [keyboardVisible, setKeyboardVisible] = useState(false); // State to track keyboard visibility
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
 
   const togglePostBar = () => {
     // Toggle PostBar visibility
@@ -31,7 +47,7 @@ const TabNavDashboard = () => {
   return (
     <View style={styles.container}>
       <Tab.Navigator
-        tabBar={(props) => <TabBar {...props} />}
+        tabBar={(props) => !keyboardVisible && <TabBar {...props} />} // Hide TabBar when keyboard is visible
         initialRouteName="Home"
         screenOptions={({ route }) => ({
           tabBarLabel: route.name,
@@ -43,7 +59,7 @@ const TabNavDashboard = () => {
               iconName = 'search-outline';
             } else if (route.name === 'Post') {
               iconName = 'add-circle-outline';
-            } else if (route.name === 'Notification') {
+            } else if (route.name === 'UserProfile') {
               iconName = 'notifications-outline';
             }
             return <Icon name={iconName} size={size} color={color} />;
@@ -66,14 +82,14 @@ const TabNavDashboard = () => {
           }}
           options={{ tabBarActiveTintColor: '#fbbf24', headerShown: false }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="Explore"
           component={Explore}
           options={{ tabBarActiveTintColor: '#fbbf24', headerShown: false }}
-        />
+        /> */}
         <Tab.Screen
-          name="Notification"
-          component={Notification}
+          name="UserProfile"
+          component={UserProfile}
           options={{ tabBarActiveTintColor: '#fbbf24', headerShown: false }}
         />
       </Tab.Navigator>

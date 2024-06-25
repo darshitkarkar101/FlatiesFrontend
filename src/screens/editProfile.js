@@ -1,8 +1,3 @@
-/**
- * @author : Darshit Karkar
- * @description : editProfile of admin
- * @university : University of Regina
- */
 import React, { useState } from "react";
 import {
   View,
@@ -115,7 +110,6 @@ const ProfileScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* back button and favourite button */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.goBack()}
@@ -178,7 +172,6 @@ const ProfileScreen = () => {
         />
       </View>
 
-      {/* Edit/Submit button */}
       <TouchableOpacity
         onPress={isEditing ? handleSubmission : () => setIsEditing(true)}
         style={styles.submitButton}

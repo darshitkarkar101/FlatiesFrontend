@@ -36,7 +36,7 @@ const TabBar = ({ state, descriptors, navigation }) => {
         }
          else if (route.name === 'Explore') {
           iconName = 'chevron-up-circle-outline';
-        } else if (route.name === 'Notification') {
+        } else if (route.name === 'UserProfile') {
           iconName = 'notifications-outline';
         }
 

@@ -3,19 +3,29 @@ import { StyleSheet, View, Text, FlatList, Image, TouchableOpacity, ActivityIndi
 import { useNavigation } from '@react-navigation/native';
 import SearchBar from '../components/SearchBar';
 import TopNavBar from '../components/TopNavBar';
-import { useFocusEffect } from '@react-navigation/native';
 
 const HouseLists = () => {
   const navigation = useNavigation();
   const [properties, setProperties] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [selectedTab, setSelectedTab] = useState('House');
+  const [selectedTab, setSelectedTab] = useState('House'); // Initialize with 'House'
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [gender, setGender] = useState('');
+  const [location, setLocation] = useState('');
 
   const fetchProperties = () => {
     setLoading(true);
-    fetch('http://172.16.1.69:3009/api/v1/post/getPost')
+    let apiUrl = '';
+
+    // Determine API URL based on selectedTab and filters
+    if (selectedTab === 'House') {
+      apiUrl = `http://172.16.1.69:3009/api/v1/post/getPost?gender=${gender}&location=${location}`;
+    } else if (selectedTab === 'Roommates') {
+      apiUrl = `http://172.16.1.69:3009/api/v1/roommate/getRoommate?gender=${gender}&location=${location}`;
+    }
+
+    fetch(apiUrl)
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -23,7 +33,8 @@ const HouseLists = () => {
         return response.json();
       })
       .then(data => {
-        // console.log('Data:', data.payload.post);
+        console.log('Fetched Data:', data); // Check fetched data in console
+
         if (data && data.payload && data.payload.post && data.payload.post.length > 0) {
           const backendProperties = data.payload.post.map((backendProperty) => ({
             id: backendProperty._id,
@@ -55,20 +66,18 @@ const HouseLists = () => {
 
   useEffect(() => {
     fetchProperties();
-  }, [selectedTab]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchProperties();
-    }, [])
-  );
+  }, [selectedTab, gender, location]);
 
   const handleSearch = (text) => {
     setSearchText(text);
   };
 
   const navigateToPropertyDetail = (item) => {
-    navigation.navigate('RecipeDetail', { propertyId: item.id });
+    if (selectedTab === 'House') {
+      navigation.navigate('RecipeDetail', { propertyId: item.id });
+    } else if (selectedTab === 'Roommates') {
+      navigation.navigate('RoommateDetail', { propertyId: item.id });
+    }
   };
 
   const renderTags = (tags) => {
@@ -95,14 +104,13 @@ const HouseLists = () => {
           <Text style={styles.squareMeters}>{item.squareMeters} sq. m.</Text>
         </View>
       </View>
-      <Text style={styles.description}>{item.description}</Text>
+      <Text style={styles.description2}>{item.description}</Text>
       
       <View style={styles.cardFooter}>
         {renderTags(item.tags)}
       </View>
     </TouchableOpacity>
   );
-  
 
   const filteredData = properties.filter((item) => {
     return item.address.toLowerCase().includes(searchText.toLowerCase());
@@ -126,7 +134,14 @@ const HouseLists = () => {
 
   return (
     <View style={styles.container}>
-      <SearchBar searchText={searchText} onSearch={handleSearch} />
+      <SearchBar
+        searchText={searchText}
+        onSearch={handleSearch}
+        onFiltersChange={({ location, gender }) => {
+          setLocation(location);
+          setGender(gender);
+        }}
+      />
       <TopNavBar selectedTab={selectedTab} onSelectTab={setSelectedTab} />
       <FlatList
         contentContainerStyle={styles.propertyListContainer}
@@ -152,7 +167,7 @@ const styles = StyleSheet.create({
   propertyListContainer: {
     paddingBottom: 32,
   },
-card: {
+  card: {
     backgroundColor: '#fff',
     borderRadius: 10,
     marginBottom: 16,
@@ -185,6 +200,14 @@ card: {
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
+  },
+  description2: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+    marginLeft: 16,
+    marginRight: 16,
   },
   address: {
     fontSize: 12,

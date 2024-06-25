@@ -14,6 +14,7 @@ import WelcomeScreen from '../screens/WelcomeScreen';
 import Board1 from '../screens/Board1';
 import TabNavDashboard from '../screens/TabNavDashboard';
 import RecipeDetailScreen from '../screens/RecipeDetailScreen';
+import RoommateDetailScreen from '../screens/RoommateDetail';
 import ExploreScreen from '../screens/Explore';
 import EditProfileView from '../screens/editProfile';
 import PostScreenHouse from '../screens/PostScreenHouse';
@@ -50,12 +51,14 @@ function AppNavigation() {
             component={ResetPasswordScreen}
             options={{ headerShown: false }}
           />
+          <Stack.Screen name="Roommates" component={ExploreScreen} options={{ headerShown: false }} />
           <Stack.Screen name="UserProfile" component={EditProfileView} options={{ headerShown: false }} />
         <Stack.Screen name="TabNavDashboard" component={TabNavDashboard} options={{ headerShown: false }} />
       <Stack.Screen name="Explore" component={ExploreScreen} options={{ headerShown: false }} />
         {/* <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} /> */}
         <Stack.Screen name="PostScreenHouse" component={PostScreenHouse} options={{ headerShown: false }} />
         <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="RoommateDetail" component={RoommateDetailScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

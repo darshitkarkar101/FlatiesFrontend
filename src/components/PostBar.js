@@ -1,12 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window'); // Get the device's width
 
 const PostBar = ({ onCloseModal, onHousePost, onRoommatePost }) => {
+  const navigation = useNavigation();
+
   const handleClose = () => {
     onCloseModal(); // Close the PostBar
+    navigation.navigate('Home'); // Navigate to the home screen
   };
 
   return (
@@ -61,6 +65,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
 
 export default PostBar;
