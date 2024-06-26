@@ -1,8 +1,3 @@
-/**
- * @author : Darshit Karkar
- * @description : LoginScreen component
- * @university : University of Regina
- */
 import React, { useState } from "react";
 import { TouchableOpacity, StyleSheet, View } from "react-native";
 import { Text } from "react-native-paper";
@@ -11,16 +6,17 @@ import Logo from "../components/Logo";
 import Header from "../components/Header";
 import Button from "../components/Button";
 import TextInput from "../components/TextInput";
-import BackButton from "../components/BackButton";
 import { theme } from "../core/theme";
 import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: "", error: "" });
   const [password, setPassword] = useState({ value: "", error: "" });
 
+  
   const onLoginPressed = () => {
     const emailError = emailValidator(email.value);
     const passwordError = passwordValidator(password.value);
@@ -38,7 +34,7 @@ export default function LoginScreen({ navigation }) {
     };
 
     // Make the API request
-    fetch("http://172.16.1.69:3009/api/v1/admin/login", {
+    fetch("https://43e6-71-17-39-184.ngrok-free.app/api/v1/admin/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -60,10 +56,11 @@ export default function LoginScreen({ navigation }) {
 
         // Assuming the API response includes a success status
         if (data.result === 0) {
+          
           // Navigate to the dashboard or wherever you want to go
           navigation.reset({
             index: 0,
-            routes: [{ name: "TabNavDashboard" }],
+            routes: [{ name: "TabNavDashboard", params: { email: email.value } }],
           });
         } else {
           // Handle unsuccessful login, perhaps show an error message

@@ -12,13 +12,14 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import axios from "axios";
-import { launchImageLibrary } from "react-native-image-picker";
+import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const App = () => {
   const navigation = useNavigation();
   const [description, setDescription] = useState("");
-  const [descriptionBorderColor, setDescriptionBorderColor] = useState("#dcdcdc"); // Added state
+  const [descriptionBorderColor, setDescriptionBorderColor] = useState("#dcdcdc");
   const [selectedTags, setSelectedTags] = useState([]);
   const [newTag, setNewTag] = useState("");
   const [customTags, setCustomTags] = useState([]);
@@ -33,13 +34,11 @@ const App = () => {
 
   const areRequiredFieldsFilled = () => {
     return (
-      description.trim() !== "" &&
-      // selectedTags.length > 0 &&
-      price.trim() !== "" &&
-      address.trim() !== "" &&
-      postalCode.trim() !== "" &&
-      city.trim() !== "" 
-      // gender.trim() !== ""
+      description.trim() !== ""
+      // price.trim() !== "" &&
+      // address.trim() !== "" &&
+      // postalCode.trim() !== "" &&
+      // city.trim() !== ""
     );
   };
 
@@ -54,16 +53,16 @@ const App = () => {
       uid: "6674b70ff5fafce4f011ec42",
       description: description,
       tag: selectedTags.concat(customTags).map((tag) => tag._id),
-      price: price,
-      address: address,
-      postalCode: postalCode,
-      city: city,
-      gender: gender,
+      price: price || 2000,
+      address: address|| "University of Regina",
+      postalCode: postalCode || "No postal code",
+      city: city || "regina",
+      gender: gender || "other",
     };
 
     try {
       const response = await axios.post(
-        "http://172.16.1.69:3009/api/v1/post/addPost",
+        "https://43e6-71-17-39-184.ngrok-free.app/api/v1/post/addPost",
         postData
       );
       console.log("Response from addPost:", response.data);
@@ -71,6 +70,7 @@ const App = () => {
       Alert.alert("Post submitted successfully!");
       handleCancel();
       navigation.navigate("TabNavDashboard", { screen: "Home" });
+      // navigation.goBack(); // Add this line to navigate back
     } catch (error) {
       console.error("Error submitting post:", error);
       Alert.alert("Error submitting post.");
@@ -81,10 +81,6 @@ const App = () => {
     if (description.trim() === "") {
       setDescriptionBorderColor("red");
     }
-    if (selectedTags.length === 0) {
-      console.log("No tags selected");
-    }
-    // Repeat for other fields as needed
   };
 
   const handleCancel = () => {
@@ -108,30 +104,28 @@ const App = () => {
   const fetchTags = async () => {
     try {
       const response = await axios.get(
-        "http://172.16.1.69:3009/api/v1/tag/getTags"
+        "https://43e6-71-17-39-184.ngrok-free.app/api/v1/tag/getTags"
       );
       setPredefinedTags(response.data.payload.tags);
     } catch (error) {
-      console.error("Error fetching tags:", error);
+      // console.error("Error fetching tags:", error);
     }
   };
 
-  const handleUpload = () => {
-    launchImageLibrary(
-      {
-        mediaType: "mixed",
-        selectionLimit: 0,
-      },
-      (response) => {
-        if (response.didCancel) {
-          console.log("User cancelled image picker");
-        } else if (response.errorCode) {
-          console.log("ImagePicker Error: ", response.errorMessage);
-        } else if (response.assets && response.assets.length > 0) {
-          setSelectedMedia(response.assets);
-        }
-      }
-    );
+  const handleUpload = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      quality: 1
+    });
+
+    if (!result.cancelled) {
+      const newSelectedMedia = result.assets.map((asset) => ({
+        uri: asset.uri,
+        type: asset.type || "image" // Assuming it's an image if type is not available
+      }));
+
+      setSelectedMedia([...selectedMedia, ...newSelectedMedia]);
+    }
   };
 
   const removeMedia = (uri) => {
@@ -146,7 +140,7 @@ const App = () => {
         };
 
         const response = await axios.post(
-          "http://172.16.1.69:3009/api/v1/tag/addTag",
+          "https://43e6-71-17-39-184.ngrok-free.app/api/v1/tag/addTag",
           tagData
         );
         console.log("Response from addTag:", response.data);
@@ -161,7 +155,6 @@ const App = () => {
       }
     }
   };
-
   const toggleTag = (tag) => {
     if (selectedTags.some((t) => t._id === tag._id)) {
       setSelectedTags(selectedTags.filter((t) => t._id !== tag._id));
@@ -170,130 +163,140 @@ const App = () => {
     }
   };
 
-  const removeCustomTag = async (tag) => {
-    if (tag._id) {
-      try {
-        await axios.delete(
-          `http://172.16.1.69:3009/api/v1/tag/deleteTag/${tag._id}`
-        );
-        setCustomTags(customTags.filter((t) => t._id !== tag._id));
-      } catch (error) {
-        console.error("Error deleting custom tag:", error);
-        Alert.alert("Failed to delete custom tag.");
-      }
-    } else {
-      setCustomTags(customTags.filter((t) => t !== tag));
-    }
+  // const removeCustomTag = async (tag) => {
+  //   if (tag._id) {
+  //     try {
+  //       await axios.delete(
+  //         `https://43e6-71-17-39-184.ngrok-free.app/api/v1/tag/deleteTag/${tag._id}`
+  //       );
+  //       setCustomTags(customTags.filter((t) => t._id !== tag._id));
+  //     } catch (error) {
+  //       console.error("Error deleting custom tag:", error);
+  //       Alert.alert("Failed to delete custom tag.");
+  //     }
+  //   } else {
+  //     setCustomTags(customTags.filter((t) => t !== tag));
+  //   }
+  // };
+  const removeCustomTag = (tag) => {
+    setCustomTags(customTags.filter((t) => t._id !== tag._id));
   };
+  
 
   return (
+    <SafeAreaView style={styles.container}>
     <View style={styles.container}>
       <View style={styles.headerBar}>
         <View style={styles.bottomButtons}>
-          <Button style={styles.backButton} title="Cancel" onPress={handleCancel} />
-          <Button title="Post" onPress={handlePost} />
+          <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={handleCancel}>
+            <Text style={styles.buttonText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.button, styles.postButton]} onPress={handlePost}>
+            <Text style={styles.buttonText}>Post</Text>
+          </TouchableOpacity>
         </View>
       </View>
-      <ScrollView contentContainerStyle={styles.content}>
-        <TextInput
-          style={[styles.descriptionInput, { borderColor: descriptionBorderColor }]}
-          placeholder="Enter description*"
-          value={description}
-          onChangeText={(text) => {
-            setDescription(text);
-            setDescriptionBorderColor("#dcdcdc");
-          }}
-          multiline
-        />
-        <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
-          <Text style={styles.uploadButtonText}>Upload Photos/Videos</Text>
-        </TouchableOpacity>
-        <ScrollView horizontal style={styles.mediaPreviewContainer}>
-          {selectedMedia.map((media) => (
-            <View key={media.uri} style={styles.mediaPreview}>
-              {media.type.startsWith("image") ? (
-                <Image source={{ uri: media.uri }} style={styles.mediaImage} />
-              ) : (
-                <Icon name="videocam" size={50} color="#000" />
-              )}
-              <TouchableOpacity
-                style={styles.removeMediaButton}
-                onPress={() => removeMedia(media.uri)}
-              >
-                <Icon name="close-circle" size={20} color="#ff0000" />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Price*</Text>
+        <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.DescriptionLabel}>Description*</Text>
           <TextInput
-            style={styles.input}
-            placeholder="Enter price*"
-            value={price}
-            onChangeText={setPrice}
-            keyboardType="numeric"
+            style={[styles.descriptionInput, { borderColor: descriptionBorderColor }]}
+            placeholder="Enter description"
+            value={description}
+            onChangeText={(text) => {
+              setDescription(text);
+              setDescriptionBorderColor("#dcdcdc");
+            }}
+            multiline
           />
-        </View>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Address*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter address*"
-            value={address}
-            onChangeText={setAddress}
-          />
-        </View>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Postal Code*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter postal code*"
-            value={postalCode}
-            onChangeText={setPostalCode}
-            keyboardType="numeric"
-          />
-        </View>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>City*</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter city*"
-            value={city}
-            onChangeText={setCity}
-          />
-        </View>
-        <View style={styles.genderContainer}>
-          <Text style={styles.genderLabel}>Gender*</Text>
-          <TouchableOpacity
-            style={[
-              styles.genderOption,
-              gender === "male" && styles.selectedGender,
-            ]}
-            onPress={() => setGender(gender === "male" ? "" : "male")}
-          >
-            <Text style={styles.genderOptionText}>Male</Text>
+          <TouchableOpacity style={styles.uploadButton} onPress={handleUpload}>
+            <Text style={styles.uploadButtonText}>Upload Photos/Videos</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.genderOption,
-              gender === "female" && styles.selectedGender,
-            ]}
-            onPress={() => setGender(gender === "female" ? "" : "female")}
-          >
-            <Text style={styles.genderOptionText}>Female</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.genderOption,
-              gender === "other" && styles.selectedGender,
-            ]}
-            onPress={() => setGender(gender === "other" ? "" : "other")}
-          >
-            <Text style={styles.genderOptionText}>Other</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.tagsContainer}>
+          <ScrollView horizontal style={styles.mediaPreviewContainer}>
+            {selectedMedia.map((media, index) => (
+              <View key={index} style={styles.mediaPreview}>
+                {media.uri && media.type.startsWith("image") ? (
+                  <Image source={{ uri: media.uri }} style={styles.mediaImage} />
+                ) : (
+                  <Icon name="videocam" size={50} color="#000" />
+                )}
+                <TouchableOpacity
+                  style={styles.removeMediaButton}
+                  onPress={() => removeMedia(media.uri)}
+                >
+                  <Icon name="close-circle" size={20} color="#ff0000" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Price</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter price"
+              value={price}
+              onChangeText={setPrice}
+              keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Address</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter address"
+              value={address}
+              onChangeText={setAddress}
+            />
+          </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Postal Code</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter postal code"
+              value={postalCode}
+              onChangeText={setPostalCode}
+              // keyboardType="numeric"
+            />
+          </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>City</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter city"
+              value={city}
+              onChangeText={setCity}
+            />
+          </View>
+          <View style={styles.genderContainer}>
+            <Text style={styles.genderLabel}>Gender</Text>
+            <TouchableOpacity
+              style={[
+                styles.genderOption,
+                gender === "male" && styles.selectedGender,
+              ]}
+              onPress={() => setGender(gender === "male" ? "" : "male")}
+            >
+              <Text style={styles.genderOptionText}>Male</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.genderOption,
+                gender === "female" && styles.selectedGender,
+              ]}
+              onPress={() => setGender(gender === "female" ? "" : "female")}
+            >
+              <Text style={styles.genderOptionText}>Female</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.genderOption,
+                gender === "other" && styles.selectedGender,
+              ]}
+              onPress={() => setGender(gender === "other" ? "" : "other")}
+            >
+              <Text style={styles.genderOptionText}>Other</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.tagsContainer}>
           {predefinedTags.map((tag) => (
             <TouchableOpacity
               key={tag._id}
@@ -309,13 +312,14 @@ const App = () => {
           {customTags.map((tag) => (
             <View key={tag._id} style={styles.customTag}>
               <Text style={styles.tagText}>{tag.name}</Text>
-              <TouchableOpacity onPress={() => removeCustomTag(tag)}>
+              <TouchableOpacity onPress={ ()=> removeCustomTag(tag)}>
                 <Icon name="close-circle" size={20} color="white" />
               </TouchableOpacity>
             </View>
           ))}
         </View>
-        {!showNewTagInput && (
+          
+          {!showNewTagInput && (
           <TouchableOpacity onPress={() => setShowNewTagInput(true)}>
             <Text style={styles.addTagButtonText}>Add Tag</Text>
           </TouchableOpacity>
@@ -333,10 +337,12 @@ const App = () => {
             </TouchableOpacity>
           </View>
         )}
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -344,8 +350,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   content: {
-    padding: 20,
+    padding: 15,
     paddingBottom: 80, // Adjusted padding to accommodate bottom buttons
+  },
+  DescriptionLabel : {
+    fontSize: 16,
+    marginBottom: 5,
+    color: "#000000", // Default label color
   },
   descriptionInput: {
     height: 100,
@@ -354,17 +365,19 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginBottom: 20,
+    textAlignVertical: "top",
   },
   headerBar: {
     backgroundColor: "#fbbf24",
-    height: 50,
+    height:55,
   },
+  // Upload button styles
   uploadButton: {
-    backgroundColor: "#fbbf24",
+    backgroundColor: "#00296B",
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 5,
   },
   uploadButtonText: {
     color: "#ffffff",
@@ -424,12 +437,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   selectedGender: {
-    backgroundColor: "#e5a812",
+    backgroundColor: "#00296B",
   },
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    marginBottom: 20,
+    marginBottom: 5,
   },
   tag: {
     backgroundColor: "#fbbf24",
@@ -448,7 +461,7 @@ const styles = StyleSheet.create({
   },
   customTag: {
     flexDirection: "row",
-    backgroundColor: "#fbbf24",
+    backgroundColor: "#00296B",
     paddingVertical: 8,
     paddingHorizontal: 15,
     borderRadius: 20,
@@ -478,6 +491,7 @@ const styles = StyleSheet.create({
     color: "#ffffff",
     fontWeight: "bold",
   },
+  // Bottom button styles
   bottomButtons: {
     position: "absolute",
     bottom: 10,
@@ -486,7 +500,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  button: {
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cancelButton: {
+    backgroundColor: "white", // Changed to white as requested
+  },
+  postButton: {
+    backgroundColor: "white", // Changed to white as requested
+  },
+  buttonText: {
+    color: "black",
+    fontWeight: "bold",
+  },
 });
+
 
 export default App;
 

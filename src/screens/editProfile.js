@@ -1,258 +1,245 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  TextInput,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { ChevronLeftIcon } from "react-native-heroicons/outline";
-import {
-  widthPercentageToDP as wp,
-  heightPercentageToDP as hp,
-} from "react-native-responsive-screen";
-import axios from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  const [editableEmail, setEditableEmail] = useState(undefined);
-  const [userData, setUserData] = useState();
-  const [id, setId] = useState(undefined);
-  const [state, setState] = useState();
-  const [editableLocation, setEditableLocation] = useState(undefined);
-  const [editableBio, setEditableBio] = useState(undefined);
+  const route = useRoute();
+
   const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState('Jane Doe');
+  const [gender, setGender] = useState('Female');
+  const [email, setEmail] = useState('');
 
-  const handleSubmission = async () => {
-    try {
-      // Prepare the payload with the updated user data
-      const updatedUserData = {
-        email: editableEmail,
-        country: editableLocation,
-        aboutMe: editableBio,
-      };
-
-      // Make a PUT request to the server
-      const response = await axios.put(
-        `http://localhost:3009/api/v1/admin/update/${id}`,
-        updatedUserData
-      );
-
-      // Switch to edit mode after successful submission
-      setIsEditing(!isEditing);
-    } catch (error) {
-      console.error("API Error:", error.message);
-      // Handle error, perhaps show an error message to the user
-    }
-  };
-
-  const getUser = async (userId) => {
-    try {
-      // Make a GET request to the server
-      const response = await axios.get(
-        `http://localhost:3009/api/v1/admin/get-admin?id=${userId}`
-      );
-
-      // Handle the API response
-
-      if (response.data) {
-        // Set the user data in the state
-        setUserData(response?.data?.payload?.user);
-        setEditableBio(response?.data?.payload?.user?.aboutMe);
-        setEditableEmail(response?.data?.payload?.user?.email);
-        setEditableLocation(response?.data?.payload?.user?.country);
-      }
-    } catch (error) {
-      console.error("API Error:", error.message);
-      // Handle error, perhaps show an error message to the user
-    }
-  };
-
-  const getUserIdFromLocalStorage = async () => {
-    // Retrieve user ID from local storage
-    let userId = await AsyncStorage.getItem("login");
-    userId = userId && typeof userId == "string" && JSON.parse(userId).payload;
-    setId(userId);
-    setState({
-      ...state,
-      userLogin: userId,
-      email: userId?.admin?.email,
-      id: userId?.admin?._id,
-      name: userId?.admin?.name,
-      country: userId?.admin?.country,
-    });
-  };
-
-  React.useEffect(() => {
-    const getUserIdFromLocalStorage = async () => {
-      try {
-        const userId = await AsyncStorage.getItem("login");
-        const parsedUserId =
-          userId && typeof userId === "string"
-            ? JSON.parse(userId).payload
-            : null;
-        setEditableEmail(parsedUserId?.admin?.email);
-        setEditableLocation(parsedUserId?.admin?.country);
-        setEditableBio(parsedUserId?.aboutMe);
-        getUser(parsedUserId?.admin?._id);
-        setId(parsedUserId?.admin?._id);
-      } catch (error) {
-        console.error("Error reading user ID from AsyncStorage:", error);
-      }
-    };
-
-    getUserIdFromLocalStorage();
+  useEffect(() => {
+    // Retrieve email from AsyncStorage
+    AsyncStorage.getItem('login')
+      .then((data) => {
+        console.log('Data retrieved from AsyncStorage:', data);
+        const parsedData = JSON.parse(data);
+        setName (parsedData.payload.admin.name); // Accessing name from the correct path
+        setEmail(parsedData.payload.admin.email); // Accessing email from the correct path
+        console.log('Email retrieved from AsyncStorage:', parsedData.payload.admin.email);
+      })
+      .catch((error) => {
+        console.error('Error retrieving data from AsyncStorage:', error);
+      });
   }, []);
 
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-        >
-          <ChevronLeftIcon size={hp(3.5)} strokeWidth={4.5} color="white" />
-        </TouchableOpacity>
-      </View>
+  const handleEditPress = () => {
+    setIsEditing(!isEditing);
+  };
 
-      {/* Profile content */}
+  const handleSubmit = () => {
+    setIsEditing(false);
+  };
+
+  const handleLogout = () => {
+    // Clear AsyncStorage and navigate to login screen
+    AsyncStorage.clear()
+      .then(() => {
+        console.log('AsyncStorage cleared successfully');
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'LoginScreen' }],
+        });
+      })
+      .catch((error) => {
+        console.error('Error clearing AsyncStorage:', error);
+      });
+  };
+
+  return (
+    <View style={styles.container}>
+      <Image
+        source={{ uri: 'https://www.bootdey.com/image/900x400/00296B/000000' }}
+        style={styles.coverImage}
+      />
       <View style={styles.avatarContainer}>
         <Image
-          source={require("../../assets/images/avatar.png")}
+          source={{ uri: 'https://www.bootdey.com/img/Content/avatar/avatar2.png' }}
           style={styles.avatar}
         />
-        <Text style={styles.name}>{userData?.name}</Text>
+        {!isEditing && (
+          <Text style={[styles.name, styles.textWithShadow]}>{name}</Text>
+        )}
       </View>
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Email:</Text>
-        <TextInput
-          style={[
-            styles.editableInfoValue,
-            isEditing ? styles.editable : null, // Conditional styles for editable mode
-          ]}
-          value={editableEmail}
-          placeholder="Please enter email address"
-          onChangeText={(text) => setEditableEmail(text)}
-          editable={isEditing} // Enable/disable editing based on the mode
-        />
+      <View style={styles.content}>
+        {!isEditing && (
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoLabel}>Email:</Text>
+            <Text style={styles.infoValue}>{email}</Text>
+          </View>
+        )}
+        {isEditing && (
+          <View style={styles.infoContainer2}>
+            <Text style={styles.infoLabel2}>Name:</Text>
+            <TextInput
+              style={[styles.editableText2]}
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
+        )}
+        <View style={styles.infoContainer}>
+          <Text style={styles.infoLabel}>Gender:</Text>
+          {isEditing ? (
+            <View style={styles.genderSelection}>
+              <TouchableOpacity
+                style={[styles.genderButton, gender === 'Male' && styles.genderButtonSelected]}
+                onPress={() => setGender('Male')}
+              >
+                <Text style={styles.genderButtonText}>Male</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.genderButton, gender === 'Female' && styles.genderButtonSelected]}
+                onPress={() => setGender('Female')}
+              >
+                <Text style={styles.genderButtonText}>Female</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.genderButton, gender === 'Other' && styles.genderButtonSelected]}
+                onPress={() => setGender('Other')}
+              >
+                <Text style={styles.genderButtonText}>Other</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={styles.infoValue}>{gender}</Text>
+          )}
+        </View>
       </View>
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Location:</Text>
-        <TextInput
-          style={[
-            styles.editableInfoValue,
-            isEditing ? styles.editable : null, // Conditional styles for editable mode
-          ]}
-          value={editableLocation}
-          placeholder="Please enter location"
-          onChangeText={(text) => setEditableLocation(text)}
-          editable={isEditing} // Enable/disable editing based on the mode
-        />
-      </View>
-
-      <View style={styles.infoContainer}>
-        <Text style={styles.infoLabel}>Bio:</Text>
-        <TextInput
-          style={[
-            styles.editableInfoValue,
-            styles.editableTextArea, // Additional styles for multiline text input
-            isEditing ? styles.editable : null, // Conditional styles for editable mode
-          ]}
-          placeholder="Please enter bio"
-          value={editableBio}
-          onChangeText={(text) => setEditableBio(text)}
-          multiline
-          editable={isEditing} // Enable/disable editing based on the mode
-        />
-      </View>
-
-      <TouchableOpacity
-        onPress={isEditing ? handleSubmission : () => setIsEditing(true)}
-        style={styles.submitButton}
-      >
-        <Text style={styles.submitButtonText}>
-          {isEditing ? "Submit" : "Edit"}
-        </Text>
+      <TouchableOpacity style={styles.editButton} onPress={isEditing ? handleSubmit : handleEditPress}>
+        <Icon name={isEditing ? "checkmark" : "pencil"} size={20} color="#fff" />
+        <Text style={styles.editButtonText}>{isEditing ? 'Submit' : 'Edit'}</Text>
       </TouchableOpacity>
-    </ScrollView>
+
+      {/* Logout Button */}
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Logout</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "white",
+    flex: 1,
+    backgroundColor: '#fff',
     padding: 20,
-    paddingTop: 70,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  backButton: {
-    padding: 7,
-    borderRadius: 50,
-    backgroundColor: "#fbbf24",
+  coverImage: {
+    height: 200,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   avatarContainer: {
-    alignItems: "center",
-    marginTop: 10,
-    borderColor: "black",
-    borderWidth: 5,
-    backgroundColor: "#fbbf24",
-    borderRadius: 50,
-    borderColor: "#FBC539",
+    alignItems: 'center',
+    marginTop: 20,
   },
   avatar: {
-    top: 5,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderBlockColor: 'white',
   },
   name: {
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: 'bold',
     marginTop: 10,
-    color: "black",
+    color: 'white',
+  },
+  textWithShadow: {
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+  },
+  editableText: {
+    backgroundColor: 'white',
+    color: 'black',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+    borderColor: '#ccc',
+    borderWidth: 1,
+  },
+  content: {
+    marginTop: 20,
   },
   infoContainer: {
     marginTop: 20,
   },
+  infoContainer2: {
+    marginTop: 40,
+  },
   infoLabel: {
-    fontSize: hp(3),
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
-  editableInfoValue: {
-    fontSize: hp(2.5),
+  infoLabel2: {
+    fontWeight: 'bold',
+  },
+  infoValue: {
     marginTop: 5,
+  },
+  editableText2: {
+    backgroundColor: 'white',
+    color: 'black',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 5,
-    padding: 5,
-    color: "black",
-  },
-  editable: {
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderColor: "#ccc",
-    color: "gray",
   },
-  editableTextArea: {
-    minHeight: 100,
+  genderSelection: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
   },
-  submitButton: {
-    backgroundColor: "#fbbf24",
+  genderButton: {
+    flex: 1,
+    paddingVertical: 10,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  genderButtonSelected: {
+    backgroundColor: '#fbbf24',
+    borderColor: '#fbbf24',
+  },
+  genderButtonText: {
+    fontSize: 16,
+  },
+  editButton: {
+    flexDirection: 'row',
+    backgroundColor: '#fbbf24',
     padding: 10,
     borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 20,
-    alignItems: "center",
   },
-  submitButtonText: {
-    color: "white",
-    fontSize: hp(2),
-    fontWeight: "bold",
+  editButtonText: {
+    color: '#fff',
+    marginLeft: 5,
+    fontWeight: 'bold',
+  },
+  logoutButton: {
+    backgroundColor: '#00296B',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 });
 

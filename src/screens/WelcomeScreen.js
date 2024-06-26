@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import Animated, { useSharedValue, withSpring } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 export default function WelcomeScreen() {
 
@@ -32,18 +33,18 @@ export default function WelcomeScreen() {
       {/* logo image with rings */}
       <Animated.View className="bg-white/20 rounded-full" style={{padding: ring2padding}}>
         <Animated.View className="bg-white/20 rounded-full" style={{padding: ring1padding}}>
-            <Image source={require('../../assets/images/welcome.png')}
+            <Image source={require('../../assets/images/FlateMate.png')}
                 style={{width: hp(20), height: hp(20)}} />
         </Animated.View>
       </Animated.View>
 
       {/* title and punchline */}
       <View className="flex items-center space-y-2">
-        <Text style={{fontSize: hp(7)}} className="font-bold text-white tracking-widest">
-            NutriChoice
+        <Text style={{fontSize: hp(7) }} className="font-bold text-white tracking-widest">
+        Flatmates
         </Text>
-        <Text style={{fontSize: hp(2)}} className="font-medium text-white tracking-widest">
-            Food is always right
+        <Text style={{fontSize: hp(2)} } className="font-medium text-white tracking-widest">
+        Roommates Made Easy
         </Text>
       </View>
     </View>

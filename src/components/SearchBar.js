@@ -1,37 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, View, TouchableOpacity, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const SearchBar = ({ searchText, onSearch, onFiltersChange }) => {
+const SearchBar = ({ searchText, onSearch, onFiltersChange, filters }) => {
   const [isFilterVisible, setIsFilterVisible] = useState(false);
-  const [location, setLocation] = useState('');
-  const [gender, setGender] = useState('');
-  const [selectedType, setSelectedType] = useState('House'); // Default to House
+  const [location, setLocation] = useState(filters.location || '');
+  const [gender, setGender] = useState(filters.gender || '');
+  const [selectedType, setSelectedType] = useState(filters.selectedType || 'House');
+
+  useEffect(() => {
+    setLocation(filters.location);
+    setGender(filters.gender);
+    setSelectedType(filters.selectedType);
+  }, [filters]);
 
   const toggleFilterVisibility = () => {
     setIsFilterVisible(!isFilterVisible);
   };
 
   const applyFilters = () => {
-    const filters = {
+    const newFilters = {
       location,
       gender,
       selectedType,
     };
-    onFiltersChange(filters); // Pass filters to parent component (HouseLists)
+    onFiltersChange(newFilters);
     setIsFilterVisible(false);
   };
 
   const handleSearch = (text) => {
-    onSearch(text); // Pass search text to parent component (HouseLists)
-    if (selectedType === 'House') {
-      const filters = {
-        location,
-        gender,
-        selectedType,
-      };
-      onFiltersChange(filters); // Pass filters to parent component (HouseLists)
-    }
+    onSearch(text);
   };
 
   const selectGender = (selectedGender) => {
@@ -50,7 +48,7 @@ const SearchBar = ({ searchText, onSearch, onFiltersChange }) => {
           placeholder="Search properties..."
           onChangeText={handleSearch}
           value={searchText}
-          onSubmitEditing={() => handleSearch(searchText)} // Trigger search on enter
+          onSubmitEditing={() => handleSearch(searchText)}
         />
         <TouchableOpacity onPress={toggleFilterVisibility} style={styles.filterIcon}>
           <Icon name="filter" size={24} color="#000" />
@@ -80,7 +78,7 @@ const SearchBar = ({ searchText, onSearch, onFiltersChange }) => {
               </TouchableOpacity>
             </View>
             <TextInput
-              style={styles.filterInput}
+              style={styles.locationInput}
               placeholder="Location"
               onChangeText={setLocation}
               value={location}
@@ -123,6 +121,8 @@ const SearchBar = ({ searchText, onSearch, onFiltersChange }) => {
     </View>
   );
 };
+
+
 
 const styles = StyleSheet.create({
   container: {
@@ -189,6 +189,15 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 10,
   },
+  locationInput: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 10,
+  },
+
   genderContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',

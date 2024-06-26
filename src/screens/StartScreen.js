@@ -33,10 +33,10 @@ export default function StartScreen({ navigation }) {
     <Background>
       <Logo />
       <StatusBar backgroundColor="#fff" barStyle="dark-content" />
-      <Header>Welcome to NutriChoice</Header>
+      <Header>Welcome to FlateMate</Header>
       <Paragraph>
-        Discover delicious and healthy recipes tailored to your nutritional
-        preferences.
+      Discover the easiest way to find your perfect roommate and ideal living space.
+
       </Paragraph>
       <Button
         mode="contained"

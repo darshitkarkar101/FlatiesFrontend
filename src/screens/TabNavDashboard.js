@@ -5,7 +5,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import HouseLists from './HouseList';
 import UserProfile from './editProfile';
 import Explore from './Explore';
-import Notification from './NotificationScreen';
 import TabBar from '../components/TabBar';
 import LogOutScreen from './LogOutScreen'; // Correct import path
 import PostBar from '../components/PostBar'; // Correct import path
@@ -60,7 +59,7 @@ const TabNavDashboard = () => {
             } else if (route.name === 'Post') {
               iconName = 'add-circle-outline';
             } else if (route.name === 'UserProfile') {
-              iconName = 'notifications-outline';
+              iconName = 'person-outline';
             }
             return <Icon name={iconName} size={size} color={color} />;
           },
@@ -107,6 +106,7 @@ const TabNavDashboard = () => {
             onRoommatePost={() => {
               // Implement logic for finding roommates
               console.log('Find roommates logic');
+              navigation.navigate('PostScreenRoommate'); // Navigate to Roommates screen
               handleClosePostBar();
             }}
           />

@@ -52,7 +52,7 @@ const RecipeCard = ({ item, index, navigation }) => {
           marginBottom: hp(2),
           padding: hp(1), // Added padding for better spacing
         }}
-        onPress={() => navigation.navigate('RecipeDetail', { ...item })}
+        onPress={() => navigation.navigate('HouseDetail', { ...item })}
       >
         <View style={{ flexDirection: 'row', width: '100%' }}>
           <CachedImage

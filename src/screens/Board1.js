@@ -74,7 +74,7 @@ export default function Board1({ navigation }) {
               gender === "non-binary" && styles.genderButtonTextSelected,
             ]}
           >
-            ☿ Non-Binary
+            ☿ Other
           </Text>
         </TouchableOpacity>
         {error && <Text style={styles.errorText}>Please select your gender.</Text>}

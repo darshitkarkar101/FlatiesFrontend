@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useIsFocused } from '@react-navigation/native';
 import SearchBar from '../components/SearchBar';
 import TopNavBar from '../components/TopNavBar';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const HouseLists = () => {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const [properties, setProperties] = useState([]);
   const [searchText, setSearchText] = useState('');
-  const [selectedTab, setSelectedTab] = useState('House'); // Initialize with 'House'
+  const [selectedTab, setSelectedTab] = useState('House');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [gender, setGender] = useState('');
-  const [location, setLocation] = useState('');
+  const [filters, setFilters] = useState({
+    location: '',
+    gender: '',
+    selectedType: 'House',
+  });
 
   const fetchProperties = () => {
     setLoading(true);
     let apiUrl = '';
 
-    // Determine API URL based on selectedTab and filters
     if (selectedTab === 'House') {
-      apiUrl = `http://172.16.1.69:3009/api/v1/post/getPost?gender=${gender}&location=${location}`;
+      apiUrl = `https://43e6-71-17-39-184.ngrok-free.app/api/v1/post/getPost?gender=${filters.gender}&location=${filters.location}`;
     } else if (selectedTab === 'Roommates') {
-      apiUrl = `http://172.16.1.69:3009/api/v1/roommate/getRoommate?gender=${gender}&location=${location}`;
+      apiUrl = `https://43e6-71-17-39-184.ngrok-free.app/api/v1/roommate/getRoommate?gender=${filters.gender}&location=${filters.location}`;
     }
 
     fetch(apiUrl)
@@ -33,8 +37,6 @@ const HouseLists = () => {
         return response.json();
       })
       .then(data => {
-        console.log('Fetched Data:', data); // Check fetched data in console
-
         if (data && data.payload && data.payload.post && data.payload.post.length > 0) {
           const backendProperties = data.payload.post.map((backendProperty) => ({
             id: backendProperty._id,
@@ -65,16 +67,23 @@ const HouseLists = () => {
   };
 
   useEffect(() => {
-    fetchProperties();
-  }, [selectedTab, gender, location]);
+    if (isFocused) {
+      fetchProperties();
+    }
+  }, [isFocused, selectedTab, filters]);
 
   const handleSearch = (text) => {
     setSearchText(text);
   };
 
+  const handleFiltersChange = (newFilters) => {
+    setFilters(newFilters);
+    setSelectedTab(newFilters.selectedType); // Update the selected tab based on filter selection
+  };
+
   const navigateToPropertyDetail = (item) => {
     if (selectedTab === 'House') {
-      navigation.navigate('RecipeDetail', { propertyId: item.id });
+      navigation.navigate('HouseDetail', { propertyId: item.id });
     } else if (selectedTab === 'Roommates') {
       navigation.navigate('RoommateDetail', { propertyId: item.id });
     }
@@ -93,19 +102,16 @@ const HouseLists = () => {
     <TouchableOpacity style={styles.card} onPress={() => navigateToPropertyDetail(item)}>
       <Image source={{ uri: item.image }} style={styles.image} />
       <View style={styles.cardDetails}>
-        {/* Left side: Description and Address */}
         <View style={styles.leftColumn}>
           <Text style={styles.description}>{item?.address} {item?.city}</Text>
           <Text style={styles.address}>{item.gender}</Text>
         </View>
-        {/* Right side: Price and Square Meters */}
         <View style={styles.rightColumn}>
           <Text style={styles.price}>${item.price} CAD</Text>
           <Text style={styles.squareMeters}>{item.squareMeters} sq. m.</Text>
         </View>
       </View>
       <Text style={styles.description2}>{item.description}</Text>
-      
       <View style={styles.cardFooter}>
         {renderTags(item.tags)}
       </View>
@@ -137,10 +143,8 @@ const HouseLists = () => {
       <SearchBar
         searchText={searchText}
         onSearch={handleSearch}
-        onFiltersChange={({ location, gender }) => {
-          setLocation(location);
-          setGender(gender);
-        }}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
       />
       <TopNavBar selectedTab={selectedTab} onSelectTab={setSelectedTab} />
       <FlatList
@@ -152,7 +156,6 @@ const HouseLists = () => {
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -199,7 +202,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 0,
   },
   description2: {
     fontSize: 14,
@@ -216,7 +219,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#6200ee',
+    color: '#00296B',
     marginBottom: 8,
   },
   squareMeters: {

@@ -69,7 +69,7 @@ const RecipeCard = ({ item, index, navigation }) => {
           paddingRight: isEven ? 8 : 0,
         }}
         className="flex justify-center mb-4 space-y-1"
-        onPress={() => navigation.navigate("RecipeDetail", { ...item })}
+        onPress={() => navigation.navigate("HouseDetail", { ...item })}
       >
         {/* <Image 
                     source={{uri: item.strMealThumb}}

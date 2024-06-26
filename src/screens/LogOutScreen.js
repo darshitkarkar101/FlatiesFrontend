@@ -32,7 +32,7 @@ export default function LoginScreen({ navigation }) {
     };
 
     // Make the API request
-    fetch('http://172.16.1.69:3009/api/v1/admin/login', {
+    fetch('https://43e6-71-17-39-184.ngrok-free.app/api/v1/admin/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

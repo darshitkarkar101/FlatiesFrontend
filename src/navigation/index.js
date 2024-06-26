@@ -13,11 +13,14 @@ import HomeScreen from '../screens/HomeScreen';
 import WelcomeScreen from '../screens/WelcomeScreen';
 import Board1 from '../screens/Board1';
 import TabNavDashboard from '../screens/TabNavDashboard';
-import RecipeDetailScreen from '../screens/RecipeDetailScreen';
+import HouseDetailScreen from '../screens/HouseDetailScreen';
 import RoommateDetailScreen from '../screens/RoommateDetail';
 import ExploreScreen from '../screens/Explore';
 import EditProfileView from '../screens/editProfile';
 import PostScreenHouse from '../screens/PostScreenHouse';
+import PostScreenRoommate from '../screens/PostScreenRoommate';
+import LogOut from '../screens/LogOutScreen';
+
 // import LoginScreen from '../screens/LoginScreen';
 import {
   StartScreen,
@@ -57,8 +60,10 @@ function AppNavigation() {
       <Stack.Screen name="Explore" component={ExploreScreen} options={{ headerShown: false }} />
         {/* <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} /> */}
         <Stack.Screen name="PostScreenHouse" component={PostScreenHouse} options={{ headerShown: false }} />
-        <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="HouseDetail" component={HouseDetailScreen} options={{ headerShown: false }} />
         <Stack.Screen name="RoommateDetail" component={RoommateDetailScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="LogOut" component={LogOut} options={{ headerShown: false }} />
+        <Stack.Screen name="PostScreenRoommate" component={PostScreenRoommate} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

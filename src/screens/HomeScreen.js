@@ -10,7 +10,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 // import HomeScreen from './HomeScreen';
 import HouseLists from './HouseList';
 import Explore from './Explore';
-import Notification from './NotificationScreen';
 
 const Tab = createMaterialTopTabNavigator();
 

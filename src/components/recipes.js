@@ -51,7 +51,7 @@ const RecipeCard = ({item, index, navigation})=>{
             <Pressable
                 style={{width: '100%', paddingLeft: isEven? 0:8, paddingRight: isEven?8:0}}
                 className="flex justify-center mb-4 space-y-1"
-                onPress={()=> navigation.navigate('RecipeDetail', {...item})}
+                onPress={()=> navigation.navigate('HouseDetail', {...item})}
             >
                 {/* <Image 
                     source={{uri: item.strMealThumb}}
